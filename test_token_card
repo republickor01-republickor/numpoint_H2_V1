@@ -1,0 +1,146 @@
+// ----------------------------------------------------
+// 값 파싱 유틸 (표현 → 계산용 값)
+// ----------------------------------------------------
+function parseValue(raw) {
+  if (typeof raw !== "string") return NaN;
+
+  // 분수 "a/b"
+  if (raw.includes("/")) {
+    const [a, b] = raw.split("/").map(Number);
+    if (!isNaN(a) && !isNaN(b) && b !== 0) {
+      return a / b;
+    }
+  }
+
+  // 순환소수 "0.(3)" → 근사 (지금은 NaN 허용해도 됨)
+  if (raw.includes("(")) {
+    return NaN; // 내일 정식 파서 붙이면 됨
+  }
+
+  // 제곱근
+  if (raw.includes("√")) {
+    const n = Number(raw.replace("√", ""));
+    return Math.sqrt(n);
+  }
+
+  // π
+  if (raw === "π" || raw === "pi") {
+    return Math.PI;
+  }
+
+  // 일반 숫자
+  const v = Number(raw);
+  return isNaN(v) ? NaN : v;
+}
+
+// ----------------------------------------------------
+// TokenCard
+// ----------------------------------------------------
+export class TokenCard {
+  constructor(x, y, size = 24, raw = "1") {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+
+    // ⭐ 핵심: 표현과 계산 분리
+    this.raw = raw;
+    this.value = parseValue(raw);
+
+    this.dragging = false;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.showBalloon = false;
+  }
+
+  contains(px, py) {
+    return (
+      px >= this.x &&
+      px <= this.x + this.size &&
+      py >= this.y &&
+      py <= this.y + this.size
+    );
+  }
+
+  pointerDown(px, py) {
+    if (!this.contains(px, py)) return false;
+    this.dragging = true;
+    this.showBalloon = true;
+    this.offsetX = px - this.x;
+    this.offsetY = py - this.y;
+    return true;
+  }
+
+  pointerMove(px, py) {
+    if (!this.dragging) return;
+    this.x = px - this.offsetX;
+    this.y = py - this.offsetY;
+  }
+
+  pointerUp() {
+    this.dragging = false;
+    this.showBalloon = false;
+  }
+
+  draw(ctx) {
+    ctx.fillStyle = "#e0e0e0";
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 2;
+    ctx.fillRect(this.x, this.y, this.size, this.size);
+    ctx.strokeRect(this.x, this.y, this.size, this.size);
+  }
+
+  drawBalloon(ctx) {
+    if (!this.showBalloon) return;
+
+    const text = this.raw;
+    ctx.font = "14px Arial";
+    const padding = 10;
+    const textWidth = ctx.measureText(text).width;
+
+    const bw = textWidth + padding * 2;
+    const bh = 32;
+
+    const cx = this.x + this.size / 2;
+    const bx = cx - bw / 2;
+    const by = this.y - bh - 8;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 1;
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeRect(bx, by, bw, bh);
+
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, bx + bw / 2, by + bh / 2);
+  }
+
+  getCenter() {
+    return {
+      x: this.x + this.size / 2,
+      y: this.y + this.size / 2,
+    };
+  }
+
+  getRect() {
+    return {
+      x: this.x,
+      y: this.y,
+      width: this.size,
+      height: this.size,
+    };
+  }
+}
+
+tokens.push(
+      new TokenCard(
+        740 - tokens.length * 40,
+        80,
+        30,
+        data.raw,
+        data.value,
+        data.com_raw,
+        dificulty
+      )
+    );
