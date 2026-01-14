@@ -1,6 +1,6 @@
 // tokenGenerator.js
 import { TokenCard } from "./token_card.js";
-import { isAlmostInteger } from "../core/math.js";
+import { isAlmostInteger } from "./core/math.js";
 
 /////////////////////////////////
 // 토큰차
@@ -532,4 +532,5 @@ function genLogToken(min, max) {
 
   return null;
 }
+
 
